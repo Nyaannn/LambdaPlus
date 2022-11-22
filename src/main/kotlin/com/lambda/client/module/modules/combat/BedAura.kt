@@ -83,10 +83,6 @@ object BedAura : Module(
             val facing = if (state == State.PLACE) EnumFacing.UP else getClosestVisibleSide(clickPos) ?: EnumFacing.UP
             val hitVecOffset = getHitVecOffset(facing)
             val packet = CPacketPlayerTryUseItemOnBlock(clickPos, facing, hand, hitVecOffset.x.toFloat(), hitVecOffset.y.toFloat(), hitVecOffset.z.toFloat())
-
-            connection.sendPacket(packet)
-            player.swingArm(hand)
-            state = State.NONE
             connection.sendPacket(packet)
             player.swingArm(hand)
             state = State.NONE

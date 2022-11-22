@@ -233,7 +233,6 @@ object CrystalAura : Module(
                 }
                 if (bindForcePlace == false ) {
                     forcePlacing = false;
-
                 }
                 place()
             }

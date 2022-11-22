@@ -48,7 +48,7 @@ object BedAura : Module(
     private val refillDelay by setting("Refill Delay", 2, 1..5, 1, unit = " ticks")
     private val minDamage by setting("Min Damage", 10f, 1f..20f, 0.25f)
     private val maxSelfDamage by setting("Max Self Damage", 4f, 1f..10f, 0.25f, { !suicideMode })
-    private val range by setting("Range", 5f, 1f..7f, 0.25f)
+    private val range by setting("Range", 5f, 1f..10f, 0.25f)
     private val placeMap = TreeMap<Pair<Float, Float>, BlockPos>(compareByDescending { it.first }) // <<TargetDamage, SelfDamage>, BlockPos>
     private val bedMap = TreeMap<Float, BlockPos>(compareBy { it }) // <SquaredDistance, BlockPos>
     private val refillTimer = TickTimer(TimeUnit.TICKS)
@@ -90,6 +90,7 @@ object BedAura : Module(
             connection.sendPacket(packet)
             player.swingArm(hand)
             state = State.NONE
+
         }
 
         safeListener<TickEvent.ClientTickEvent> {

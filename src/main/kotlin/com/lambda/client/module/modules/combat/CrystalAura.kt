@@ -125,10 +125,12 @@ object CrystalAura : Module(
     private val retryTimeout by setting("Retry Timeout", 1000, 0..5000, 50, page.atValue(Page.EXPLODE_TWO) { hitAttempts > 0 })
     private val explodeRange by setting("Explode Range", 4.25f, 0.0f..7.0f, 0.25f, page.atValue(Page.EXPLODE_TWO))
     private val wallExplodeRange by setting("Wall Explode Range", 3.5f, 0.0f..5.0f, 0.25f, page.atValue(Page.EXPLODE_TWO))
+    /* MISC */
+
     /* End of settings */
 
     private enum class Page {
-        GENERAL, FORCE_PLACE, PLACE_ONE, PLACE_TWO, EXPLODE_ONE, EXPLODE_TWO
+        GENERAL, FORCE_PLACE, PLACE_ONE, PLACE_TWO, EXPLODE_ONE, EXPLODE_TWO, MISC
     }
 
     @Suppress("UNUSED")

@@ -1,0 +1,17 @@
+[
+  {
+    "modid": "lambdaplus",
+    "name": "Lambda+",
+    "description": "Lambda+ ",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "",
+    "updateUrl": "",
+    "authorList": [
+      "Nyaann"
+    ],
+    "credits": "L4J",
+    "logoFile": "lambda.png",
+    "dependencies": []
+  }
+]

@@ -1,0 +1,200 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven { url = 'https://maven.minecraftforge.net/' }
+        maven { url = 'https://repo.spongepowered.org/maven/' }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:4.+'
+        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:6.1.0'
+    }
+}
+
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version "$kotlinVersion"
+}
+
+apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'org.spongepowered.mixin'
+apply plugin: 'com.github.johnrengelman.shadow'
+
+version project.modVersion
+group project.modGroup
+
+compileJava {
+    sourceCompatibility = targetCompatibility = '1.8'
+    options.encoding = 'UTF-8'
+}
+
+compileKotlin.kotlinOptions {
+    freeCompilerArgs += '-Xlambdas=indy'
+    freeCompilerArgs += '-opt-in=kotlin.RequiresOptIn'
+    freeCompilerArgs += '-opt-in=kotlin.contracts.ExperimentalContracts'
+}
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://repo.spongepowered.org/maven/' }
+    maven { url = 'https://impactdevelopment.github.io/maven/' }
+    maven { url = 'https://jitpack.io' }
+}
+
+minecraft {
+    mappings channel: "$mappingsChannel", version: "$mappingsVersion"
+
+    runs {
+        client {
+            workingDirectory project.file('run')
+
+            property 'fml.coreMods.load', 'com.lambda.client.LambdaCoreMod'
+            property 'mixin.env.disableRefMap', 'true' // Disable refmap so we don't get trolled by Baritone
+
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+            property 'forge.logging.console.level', 'debug'
+        }
+    }
+}
+
+configurations {
+    jarLibs
+    // Force choosing the correct nightly build because Mac OS chooses an invalid one
+    all {
+        resolutionStrategy {
+            force 'org.lwjgl.lwjgl:lwjgl-platform:2.9.4-nightly-20150209'
+        }
+    }
+}
+
+dependencies {
+    // Forge
+    minecraft "net.minecraftforge:forge:$minecraftVersion-$forgeVersion"
+
+    jarLibs('org.spongepowered:mixin:0.8.5') {
+        exclude module: 'commons-io'
+        exclude module: 'gson'
+        exclude module: 'guava'
+    }
+
+    // Hacky way to get mixin work
+    annotationProcessor('org.spongepowered:mixin:0.8.5:processor') {
+        exclude module: 'gson'
+    }
+
+    // Not the latest Reflections because it breaks Future compatibility :/
+    //noinspection GradlePackageUpdate
+    jarLibs 'org.reflections:reflections:0.9.12'
+
+    jarLibs("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion") {
+        exclude module: 'kotlin-stdlib-common'
+        exclude module: 'annotations'
+    }
+
+    jarLibs("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion") {
+        exclude module: 'kotlin-stdlib'
+    }
+
+    jarLibs("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxCoroutinesVersion") {
+        exclude module: 'kotlin-stdlib-jdk8'
+        exclude module: 'kotlin-stdlib-common'
+    }
+
+    jarLibs 'com.github.cbyrneee:DiscordIPC:e18542f600'
+
+    // Add them back to compileOnly (provided)
+    compileOnly "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion"
+    compileOnly 'org.jetbrains:annotations:23.0.0'
+
+    // This Baritone will NOT be included in the jar
+    implementation 'com.github.cabaletta:baritone:1.2.14'
+
+    // This Baritone WILL be included in the jar
+    jarLibs 'cabaletta:baritone-api:1.2'
+
+    // Add everything in jarLibs to implementation (compile)
+    implementation configurations.jarLibs
+}
+
+mixin {
+    defaultObfuscationEnv 'searge'
+    sourceSets {
+        main {
+            ext.refMap = 'mixins.lambda.refmap.json'
+        }
+    }
+}
+
+processResources {
+    exclude '**/rawimagefiles'
+
+    from(sourceSets.main.resources.srcDirs) {
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
+        include 'mcmod.info'
+        expand version: version, 'mcversion': minecraftVersion
+    }
+}
+
+task buildApiSource(type: Jar) { // Generate sources
+    group 'build'
+    description 'Assemble API library source archive'
+
+    archiveClassifier.set 'api-source'
+    from sourceSets.main.allSource
+}
+
+task buildApi(type: Jar) {
+    group 'build'
+    description 'Assemble API library archive'
+
+    archiveClassifier.set 'api'
+    from sourceSets.main.output
+}
+
+task buildAll {
+    group 'build'
+    description 'Assemble all jars'
+
+    dependsOn 'buildApi'
+    dependsOn 'buildApiSource'
+    dependsOn 'build'
+}
+
+shadowJar {
+    // Don't put baritone mixin here please c:
+    manifest.attributes(
+            'Manifest-Version': 1.0,
+            'MixinConfigs': 'mixins.lambda.json',
+            'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker',
+            'FMLCorePluginContainsFMLMod': 'true',
+            'FMLCorePlugin': 'com.lambda.client.LambdaCoreMod',
+            'ForceLoadAsMod': 'true'
+    )
+
+    archiveClassifier.set('')
+    exclude '**/module-info.class',
+            'DebugProbesKt.bin',
+            'META-INF/proguard/**',
+            'META-INF/versions/**',
+            'META-INF/**.RSA',
+            'META-INF/com.android.tools/**',
+            'META-INF/*.kotlin_module',
+            'kotlin/**/*.kotlin_metadata',
+            'kotlin/**/*.kotlin_builtins',
+            'META-INF/*.version'
+    configurations = [project.configurations.jarLibs]
+    relocate 'kotlin', 'com.lambda.shadow.kotlin'
+    relocate 'kotlinx', 'com.lambda.shadow.kotlinx'
+    finalizedBy 'reobfShadowJar'
+}
+
+reobf {
+    shadowJar {}
+    jar {
+        enabled = false
+    }
+}
+
+artifacts {
+    shadowJar
+}
+

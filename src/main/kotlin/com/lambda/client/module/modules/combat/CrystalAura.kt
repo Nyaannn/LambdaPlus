@@ -86,7 +86,7 @@ object CrystalAura : Module(
     private val swingMode by setting("Swing Mode", SwingMode.CLIENT, page.atValue(Page.GENERAL))
 
     /* Force place */
-    private val bindForcePlace by setting("Bind Force Place", false, page.atValue(Page.FORCE_PLACE))
+    private val bindForcePlace by setting("Force Place", false, page.atValue(Page.FORCE_PLACE))
     private val forcePlaceHealth by setting("Force Place Health", 5.0f, 0.0f..20.0f, 0.5f, page.atValue(Page.FORCE_PLACE))
     private val forcePlaceArmorDura by setting("Force Place Armor Dura", 3, 0..50, 1, page.atValue(Page.FORCE_PLACE))
     private val minDamageForcePlace by setting("Min Damage Force Place", 1.5f, 0.0f..10.0f, 0.25f, page.atValue(Page.FORCE_PLACE))

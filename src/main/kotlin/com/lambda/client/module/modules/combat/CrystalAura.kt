@@ -102,7 +102,7 @@ object CrystalAura : Module(
     /* Place page two */
     private val minDamageP by setting("Min Damage Place", 4.75f, 0.0f..10.0f, 0.25f, page.atValue(Page.PLACE_TWO))
     private val maxSelfDamageP by setting("Max Self Damage Place", 3.5f, 0.0f..10.0f, 0.25f, page.atValue(Page.PLACE_TWO))
-    private val placeOffset by setting("Place Offset", 1.0f, 0f..1f, 0.05f, page.atValue(Page.PLACE_TWO))
+    private val placeOffset by setting("Place Offset", 1.0f, 0f..10f, 0.05f, page.atValue(Page.PLACE_TWO))
     private val maxCrystal by setting("Max Crystal", 2, 1..5, 1, page.atValue(Page.PLACE_TWO))
     private val placeDelayMode = setting("Place Delay Mode", PlaceDelayMode.TICKS, page.atValue(Page.PLACE_TWO))
     private val placeDelayTick by setting("Place Delay Ticks", 1, 1..10, 1, page.atValue(Page.PLACE_TWO, placeDelayMode.atValue(PlaceDelayMode.TICKS)))

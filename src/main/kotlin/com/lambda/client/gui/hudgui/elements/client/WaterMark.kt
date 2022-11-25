@@ -18,7 +18,7 @@ internal object WaterMark : LabelHud(
 
     override fun SafeClientEvent.updateText() {
         displayText.add(LambdaMod.NAME, primaryColor)
-        displayText.add("4.1.3", secondaryColor)
+        displayText.add("4.1.4", secondaryColor)
     }
 
     override fun renderHud(vertexHelper: VertexHelper) {

@@ -45,8 +45,10 @@ object BedAura : Module(
     private val ignoreSecondBaseBlock by setting("Ignore Second Base Block", false)
     private val suicideMode by setting("Suicide Mode", false)
     private val hitDelay by setting("Hit Delay", 5, 1..10, 1, unit = " ticks")
+    private val hitDelayb by setting("Hit Delay Bypass", 0f, -100f..100f, 0.25f,unit = " ticks")
+
     private val refillDelay by setting("Refill Delay", 2, 1..5, 1, unit = " ticks")
-    private val minDamage by setting("Min Damage", 10f, 1f..20f, 0.25f)
+    private val minDamage by setting("Min Damage", 10f, 1f..20f , 0.25f)
     private val maxSelfDamage by setting("Max Self Damage", 4f, 1f..10f, 0.25f, { !suicideMode })
     private val range by setting("Range", 5f, 1f..10f, 0.25f)
     private val placeMap = TreeMap<Pair<Float, Float>, BlockPos>(compareByDescending { it.first }) // <<TargetDamage, SelfDamage>, BlockPos>
@@ -55,7 +57,7 @@ object BedAura : Module(
     private var state = State.NONE
     private var clickPos = BlockPos(0, -6969, 0)
     private var lastRotation = Vec2f.ZERO
-    private var hitTickCount = 0
+    private var hitTickCount = -10
     private var inactiveTicks = 0
 
     private enum class State {
@@ -107,7 +109,7 @@ object BedAura : Module(
             updatePlaceMap()
             updateBedMap()
 
-            if (hitTickCount >= hitDelay) {
+            if (hitTickCount + hitDelayb >= hitDelay) {
                 bedMap.values.firstOrNull()?.let { preExplode(it) } ?: getPlacePos()?.let { prePlace(it) }
             } else {
                 hitTickCount++
@@ -195,7 +197,7 @@ object BedAura : Module(
     private fun getExplodePos() = bedMap.values.firstOrNull()
 
     private fun SafeClientEvent.preExplode(pos: BlockPos) {
-        hitTickCount = 0
+        hitTickCount = -10
         preClick(pos, Vec3d(0.5, 0.0, 0.5))
         state = State.EXPLODE
     }

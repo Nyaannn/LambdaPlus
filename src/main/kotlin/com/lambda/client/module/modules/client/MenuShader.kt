@@ -20,7 +20,7 @@ object MenuShader : Module(
     enabledByDefault = true
 ) {
     private val mode by setting("Mode", Mode.SET)
-    private val shader by setting("Shader", ShaderEnum.CLOUDS, { mode == Mode.SET })
+    private val shader by setting("Shader", ShaderEnum.SUNSET, { mode == Mode.SET })
 
     private enum class Mode {
         RANDOM, SET
@@ -28,13 +28,11 @@ object MenuShader : Module(
 
     @Suppress("UNUSED")
     private enum class ShaderEnum(val path: String) {
-        PY3sDream("/assets/shaders/menu/PY3's Dream.fsh"),
-        Germany("/assets/shaders/menu/germany.fsh"),
+        GERMANY("/assets/shaders/menu/germany.fsh"),
         BLUEGRID("/assets/shaders/menu/bluegrid.fsh"),
         BLUENEBULA("/assets/shaders/menu/bluenebula.fsh"),
         BLUEVORTEX("/assets/shaders/menu/bluevortex.fsh"),
         CAVE("/assets/shaders/menu/cave.fsh"),
-        CLOUDS("/assets/shaders/menu/clouds.fsh"),
         DOUGHNUTS("/assets/shaders/menu/doughnuts.fsh"),
         FIRE("/assets/shaders/menu/fire.fsh"),
         JUPITER("/assets/shaders/menu/jupiter.fsh"),
@@ -48,7 +46,7 @@ object MenuShader : Module(
         SPACE("/assets/shaders/menu/space.fsh"),
         SPACE2("/assets/shaders/menu/space2.fsh"),
         STORM("/assets/shaders/menu/storm.fsh"),
-        TRIANGLE("/assets/shaders/menu/triangle.fsh")
+        SUNSET("/assets/shaders/menu/triangle.fsh")
 
     }
 

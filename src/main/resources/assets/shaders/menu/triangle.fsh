@@ -1,6 +1,7 @@
 // ... and lo, Man created gods in his own image.
 #ifdef GL_ES
 precision mediump float;
+
 #endif
 
 #extension GL_OES_standard_derivatives : enable
@@ -9,166 +10,95 @@ uniform float time;
 uniform vec2 mouse;
 uniform vec2 resolution;
 
+             float lineWidth = 0.02;
+             float border = 0.05;
+                            float scale = 0.07;
+                            float t = time*1.4;
+
+                                      // Letter code (https://dl.dropboxusercontent.com/u/14645664/files/glsl-text.txt)
+                                      float line(vec2 p, vec2 s, vec2 e) {s*=scale;e*=scale;float l=length(s-e);vec2 d=vec2(e-s)/l;p-=vec2(s.x,-s.y);p=vec2(p.x*d.x+p.y*-d.y,p.x*d.y+p.y*d.x);return length(max(abs(p-vec2(l/2.0,0))-vec2(l/2.0,lineWidth/2.0),0.0))-border;}
+
+float Astroph(vec2 p){float d=1.0;d=min(d,line(p,vec2(1.5,1.5),vec2(2.5,0.7)));return d;}
+
+float spike(float x) {
+                         x = mod(x, 2.0);
+
+                         if (x < 1.0)
+                            return x * x;
+
+                         x = 2.0 - x;
+
+                         return x * x;
+                     }
 
 
-#define Resolution                resolution
-#define Time                    time
+float noise(float x, float amplitude) {
+                                          float n = sin(x*8.0 + time) * 0.05 +
+                                                                    sin(x*27.3 + time*0.5) * 0.005 +
+                                                                                 sin(time) * 0.01;
+                                                                                         return n * amplitude;
+                                      }
 
-#define HorizontalAmplitude        0.30
-#define VerticleAmplitude        0.20
-#define HorizontalSpeed            0.90
-#define VerticleSpeed            1.50
-#define ParticleMinSize            1.76
-#define ParticleMaxSize            1.61
-#define ParticleBreathingSpeed        0.30
-#define ParticleColorChangeSpeed    0.70
-#define ParticleCount            2.0
-#define ParticleColor1            vec3(9.0, 5.0, 3.0)
-#define ParticleColor2            vec3(1.0, 3.0, 9.0)
+const vec3 sky_high = vec3(255, 221, 128) / 255.0;
+                                     const vec3 sky_low = vec3(255, 174, 107) / 255.0;
+const vec3 water = vec3(97, 160, 171) / 255.0;
 
+                                 float fog = 10.0;
 
-float hash(float x)
-{
-    return fract(sin(x) * 43758.5453);
-}
+void main() {
 
-float noise(vec2 uv)// Thanks Inigo Quilez
-{
-    vec3 x = vec3(uv.xy, 90.0);
+                vec2 uv2 = (gl_FragCoord.xy - resolution.xy) / resolution.yy+0.7;
+                                                         uv2.x += 0.15;
 
-    vec3 p = floor(x);
-    vec3 f = fract(x);
+                                                            uv2.x *= abs(sin(uv2.x+t*2.0+22.0)*0.7+4.4);
+                                                                                        uv2.y *= abs(sin(uv2.x+t*2.0)+2.2)+1.0;
 
-    f = f*f*(3.0 - 2.0*f);
+                                                                                                                              vec3 col = vec3(uv2.y)*vec3(0.0,0.0, 0.0);
+                float d = 1.0;
 
-    float offset = 57.0;
+                float w = 0.01;
+                col = mix(vec3(1,uv2.y,0.5),col,smoothstep(lineWidth-w,lineWidth+w,d));
 
-    float n = dot(p, vec3(1.0, offset, offset*2.0));
+                                                                                      vec2 uv = (gl_FragCoord.xy / resolution.xy);
+                                                                                                                             vec2 sunuv = (gl_FragCoord.xy * 2.0 - resolution) / min(resolution.x, resolution.y);
 
-    return mix(mix(mix(hash(n + 0.0), hash(n + 1.0), f.x),
-    mix(hash(n + offset), hash(n + offset+1.0), f.x), f.y),
-    mix(mix(hash(n + offset*2.0), hash(n + offset*2.0+1.0), f.x),
-    mix(hash(n + offset*3.0), hash(n + offset*3.0+1.0), f.x), f.y), f.z);
-}
+                                                                                                                                                                                               float v = 0.0;
 
-float snoise(vec2 uv)
-{
-    return noise(uv) * 2.0 - 1.0;
-}
+                                                                                                                                                                                                       vec3 sun = vec3(179, 107, 0) / 255.0;
 
+                                                                                                                                                                                                                            if (distance(sunuv, vec2(0.0)) > 0.5)
+                                                                                                                                                                                                                                                                sun = vec3(0.0);
 
-float perlinNoise(vec2 uv)
-{
-    float n =        noise(uv * 1.0)    * 128.0 +
-    noise(uv * 2.0)    * 64.0 +
-    noise(uv * 4.0)    * 32.0 +
-    noise(uv * 8.0)    * 16.0 +
-    noise(uv * 16.0)    * 8.0 +
-    noise(uv * 32.0)    * 4.0 +
-    noise(uv * 64.0)    * 2.0 +
-    noise(uv * 128.0) * 1.0;
+                                                                                                                                                                                                                                                                float n0 = noise(uv.x * 3.18, 0.3);
+                                                                                                                                                                                                                                                                                                 float n1 = noise(uv.x * 2.34, 0.4);
+                                                                                                                                                                                                                                                                                                                       float n2 = noise(uv.x * 2.14, 0.6);
+                                                                                                                                                                                                                                                                float n3 = noise(uv.x * 1.4, 0.8);
+                                                                                                                                                                                                                                                                                           float n4 = noise(uv.x * 1.23, 1.0);
 
-    float noiseVal = n / (1.0 + 2.0 + 4.0 + 8.0 + 16.0 + 32.0 + 64.0 + 128.0);
-    noiseVal = abs(noiseVal * 2.0 - 1.0);
+                                                                                                                                                                                                                                                                                                              if (uv.y < 0.2 + n4) {
+                                                                                                                                                                                                                                                                                                                                       v = 0.5;
+                                                                                                                                                                                                                                                                                                                                   } else if (uv.y < 0.3 + n3) {
+                                                                                                                                                                                                                                                                                                                                                                   v = 0.4;
+                                                                                                                                                                                                                                                                                                                                                               } else if (uv.y < 0.35 + n2) {
+                                                                                                                                                                                                                                                                                                                                                                                                v = 0.3;
+                                                                                                                                                                                                                                                                                                                                                                                            } else if (uv.y < 0.385 + n1) {
+                                                                                                                                                                                                                                                                                                                                                                                                                              v = 0.2;
+                                                                                                                                                                                                                                                                                                                                                                                                                          } else if (uv.y < 0.41 + n0) {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                           v = 0.1;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                       }
 
-    return noiseVal;
-}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                     vec3 color = mix(sky_low, sky_high, uv.y) + sun;
 
-float fBm(vec2 uv, float lacunarity, float gain)
-{
-    float sum = 0.0;
-    float amp = 7.0;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           vec3 red = vec3(1.0,0.2,0.0);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          vec2 P0 = sunuv + vec2(0.0, 0.3);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                     float r = (1.0 - length(P0));
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                red = red * vec3(r);
 
-    for (int i = 0; i < 2; ++i)
-    {
-        sum += (perlinNoise(uv)) * amp;
-        amp *= gain;
-        uv *= lacunarity;
-    }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   if (v > 0.0) {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    vec3 water_color = water * v;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    color = mix(mix(sky_high, sky_low, 0.5), water_color, clamp(1.0-(uv.y*uv.y*uv.y)*fog, 0.0, 1.0)) + red;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                }
+                color += col;
 
-    return sum;
-}
-
-vec3 particles(vec2 pos)
-{
-
-    vec3 c = vec3(0, 0, 0);
-
-    float noiseFactor = fBm(pos, 0.01, 0.1);
-
-    for (float i = 1.0; i < ParticleCount+1.0; ++i)
-    {
-        float cs = cos(time * HorizontalSpeed * (i/ParticleCount) + noiseFactor) * HorizontalAmplitude;
-        float ss = sin(time * VerticleSpeed   * (i/ParticleCount) + noiseFactor) * VerticleAmplitude;
-        vec2 origin = vec2(cs, ss);
-
-        float t = sin(time * ParticleBreathingSpeed * i) * 0.5 + 0.5;
-        float particleSize = mix(ParticleMinSize, ParticleMaxSize, t);
-        float d = clamp(sin(length(pos - origin)  + particleSize), 0.0, particleSize);
-
-        float t2 = sin(time * ParticleColorChangeSpeed * i) * 0.5 + 0.5;
-        vec3 color = mix(ParticleColor1, ParticleColor2, t2);
-        c += color * pow(d, 10.0);
-    }
-
-    return c;
-}
-
-
-float line(vec2 a, vec2 b, vec2 p)
-{
-    vec2 aTob = b - a;
-    vec2 aTop = p - a;
-
-    float t = dot(aTop, aTob) / dot(aTob, aTob);
-
-    t = clamp(t, 0.0, 1.0);
-
-    float d = length(p - (a + aTob * t));
-    d = 1.0 / d;
-
-    return clamp(d, 0.0, 1.0);
-}
-
-
-void main(void) {
-
-    float aspectRatio = resolution.x / resolution.y;
-
-    vec2 uv = (gl_FragCoord.xy / resolution.xy);
-
-    vec2 signedUV = uv * 2.0 - 1.0;
-    signedUV.x *= aspectRatio;
-
-    float freqA = mix(0.4, 1.2, sin(time + 30.0) * 0.5 + 0.5);
-    float freqB = mix(0.4, 1.2, sin(time + 20.0) * 0.5 + 0.5);
-    float freqC = mix(0.4, 1.2, sin(time + 10.0) * 0.5 + 0.5);
-
-
-    float scale = 100.0;
-    const float v = 70.0;
-    vec3 finalColor = vec3(0.0);
-
-    finalColor = (particles(sin(abs(signedUV))) * length(signedUV)) * 0.20;
-
-    float t = line(vec2(-v, -v), vec2(0.0, v), signedUV * scale);
-    finalColor += vec3(8.0 * t, 2.0 * t, 4.0 * t) * freqA;
-    t = line(vec2(0.0, v), vec2(v, -v), signedUV * scale);
-    finalColor += vec3(2.0 * t, 8.0 * t, 4.0 * t) * freqB;
-    t = line(vec2(-v, -v), vec2(v, -v), signedUV * scale);
-    finalColor += vec3(2.0 * t, 4.0 * t, 8.0 * t) * freqC;
-
-
-    //scale = scale * 1.2;
-    //t = line( vec2(0.0, v * 0.2), vec2(0.0, -v * 0.8), signedUV * scale );
-    //finalColor += vec3( 8.0 * t, 4.0 * t, 2.0 * t) * 0.5;
-
-    //t = line( vec2(-v * 0.3, -v*0.1), vec2(v * 0.3, -v*0.1), signedUV * scale );
-    //finalColor += vec3( 8.0 * t, 4.0 * t, 2.0 * t) * 0.4;
-
-
-
-
-    gl_FragColor = vec4(finalColor, 1.0);
-
-}
+                gl_FragColor = vec4(color, 1.0);
+            }

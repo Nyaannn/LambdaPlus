@@ -46,7 +46,7 @@ object BedAura : Module(
     private val suicideMode by setting("Suicide Mode", false)
     private val hitDelay by setting("Hit Delay", 5, 1..10, 1, unit = " ticks")
     private val hitDelayb by setting("Hit Delay Bypass", 0f, -100f..100f, 0.25f,unit = " ticks")
-
+    private val iticks by setting("Inactive Ticks", 5, 1..100, 1)
     private val refillDelay by setting("Refill Delay", 2, 1..5, 1, unit = " ticks")
     private val minDamage by setting("Min Damage", 10f, 1f..20f , 0.25f)
     private val maxSelfDamage by setting("Max Self Damage", 4f, 1f..10f, 0.25f, { !suicideMode })
@@ -57,7 +57,7 @@ object BedAura : Module(
     private var state = State.NONE
     private var clickPos = BlockPos(0, -6969, 0)
     private var lastRotation = Vec2f.ZERO
-    private var hitTickCount = -10
+    private var hitTickCount = 0
     private var inactiveTicks = 0
 
     private enum class State {
@@ -95,7 +95,7 @@ object BedAura : Module(
             if (player.dimension == 0 || !CombatManager.isOnTopPriority(BedAura) || CombatSetting.pause) {
                 state = State.NONE
                 resetRotation()
-                inactiveTicks = 6
+                inactiveTicks = iticks
                 return@safeListener
             }
 
@@ -197,7 +197,7 @@ object BedAura : Module(
     private fun getExplodePos() = bedMap.values.firstOrNull()
 
     private fun SafeClientEvent.preExplode(pos: BlockPos) {
-        hitTickCount = -10
+        hitTickCount = 0
         preClick(pos, Vec3d(0.5, 0.0, 0.5))
         state = State.EXPLODE
     }

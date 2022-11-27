@@ -11,6 +11,6 @@ enum class Category(override val displayName: String) : DisplayEnum {
     PLAYER("Player"),
     RENDER("Render"),
     EXPLOITS("Exploits"),
-    TUCOCLIENT("Random");
+    TUCOCLIENT("Tuco");
     override fun toString() = displayName
 }
